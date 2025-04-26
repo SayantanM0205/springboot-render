@@ -1,0 +1,1 @@
+web: java -jar target/Cloud-Native-Application-0.0.1-SNAPSHOT.jar
