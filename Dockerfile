@@ -5,7 +5,9 @@ WORKDIR /app
 # Copy the project files into the container
 COPY . /app
 # Build the Spring Boot application using Maven
-RUN mvn clean install -DskipTests #Skipping tests to speed up the docker image build
+RUN mvn clean install -DskipTests \
+    -Dmaven.compiler.source=17 \
+    -Dmaven.compiler.target=17
 
 # Use a base image with only the JDK 17 for running the application
 FROM openjdk:17-jdk-slim
