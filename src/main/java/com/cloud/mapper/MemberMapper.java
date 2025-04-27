@@ -10,7 +10,7 @@ public class MemberMapper {
 		member.setMemberName(memberDto.getMemberName());
 		member.setMemberAge(memberDto.getMemberAge());
 		member.setMemberGender(memberDto.getMemberGender());
-		member.setMemberStatus(member.getMemberStatus());
+		member.setMemberStatus(memberDto.getMemberStatus());
 		return member;
 	}
 	

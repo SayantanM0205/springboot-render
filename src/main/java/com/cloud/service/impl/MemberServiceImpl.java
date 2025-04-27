@@ -15,32 +15,45 @@ import com.cloud.entity.Member;
 import com.cloud.mapper.MemberMapper;
 import com.cloud.repository.MemberRepository;
 import com.cloud.service.MemberService;
+import com.cloud.service.RedisService;
+
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@AllArgsConstructor
+@Slf4j
 public class MemberServiceImpl implements MemberService{
 	
-	@Autowired
 	private MemberRepository memberRepository;
 	
-	private static final Logger log = LoggerFactory.getLogger(MemberServiceImpl.class);
+	private RedisService redisService;
+	
 
 	@Override
 	public String createMember(MemberDto member) {
 		member.setMemberId(UUID.randomUUID().toString());
+		member.setMemberStatus("Active");
 		log.info("Creating member with Member Id: {}",member.getMemberId());
 		Member createMember = MemberMapper.mapmMemberDtoToMember(member);
-		createMember.setMemberStatus("Active");
 		createMember.setCreatedDateTime(LocalDateTime.now());
 		createMember.setModifiedDateTime(LocalDateTime.now());
 		memberRepository.save(createMember);
+		log.info("Saving data in redis.........");
+		redisService.set(createMember.getMemberId(), member, 3000L);
 		return createMember.getMemberId();
 	}
 
 	@Override
 	public MemberDto getMember(@RequestParam String memberId) {
+		MemberDto memberDto = redisService.get(memberId, MemberDto.class);
+		if(memberDto != null) {
+			log.info("Data retrived from redis for member with Id: {}", memberId);
+			return memberDto;
+		}
 		Member member = memberRepository.findById(memberId).orElseThrow(()->new RuntimeException("Member does not exist with Member Id: "+memberId));
 		MemberDto existingMember = MemberMapper.mapMemberToMemberDto(member);
-		log.info("Member found: {}",existingMember);
+		log.info("Member found in db: {}",existingMember);
 		return existingMember;
 	}
 
